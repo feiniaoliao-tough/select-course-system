@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生选课系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', sans-serif; background: #f0f2f5; }
+
+        .navbar {
+            background: #1890ff;
+            color: white;
+            padding: 0 24px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .navbar h1 { font-size: 20px; }
+        .navbar button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card h2 { margin-bottom: 16px; color: #333; font-size: 18px; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; color: #666; font-size: 14px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+        .btn-primary { background: #1890ff; color: white; }
+        .btn-danger { background: #ff4d4f; color: white; }
+        .btn-success { background: #52c41a; color: white; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        th { background: #fafafa; color: #666; font-weight: 500; }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .alert {
+            padding: 10px 16px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .alert-success { background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
+        .alert-error { background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; }
+
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab {
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #f0f0f0;
+            font-size: 14px;
+        }
+        .tab.active { background: #1890ff; color: white; }
+
+        #loginPage {
+            max-width: 400px;
+            margin: 80px auto;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage" class="card">
+    <h2 style="text-align:center; margin-bottom:24px;">学生选课系统</h2>
+    <div id="loginMsg"></div>
+    <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="loginUsername" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="loginPassword" placeholder="请输入密码">
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="login()">登录</button>
+    <p style="text-align:center;margin-top:12px;font-size:13px;color:#999">
+        没有账号？<span style="color:#1890ff;cursor:pointer" onclick="showRegister()">注册</span>
+    </p>
+</div>
+
+<!-- 注册页 -->
+<div id="registerPage" class="card" style="max-width:400px;margin:80px auto;display:none">
+    <h2 style="text-align:center;margin-bottom:24px;">注册账号</h2>
+    <div id="registerMsg"></div>
+    <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="regUsername" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="regPassword" placeholder="请输入密码">
+    </div>
+    <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" id="regEmail" placeholder="请输入邮箱">
+    </div>
+    <div class="form-group">
+        <label>角色</label>
+        <select id="regRole">
+            <option value="student">学生</option>
+            <option value="teacher">教师</option>
+        </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="register()">注册</button>
+    <p style="text-align:center;margin-top:12px;font-size:13px;color:#999">
+        已有账号？<span style="color:#1890ff;cursor:pointer" onclick="showLogin()">登录</span>
+    </p>
+</div>
+
+<!-- 主页面 -->
+<div id="mainPage" style="display:none">
+    <div class="navbar">
+        <h1>学生选课系统</h1>
+        <div>
+            <span id="navUsername" style="margin-right:16px;font-size:14px"></span>
+            <button onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tab-bar">
+            <div class="tab active" onclick="showTab('courses')">课程列表</div>
+            <div class="tab" onclick="showTab('myEnrollments')" id="tabMyEnroll">我的选课</div>
+            <div class="tab" onclick="showTab('topCourses')">热门课程</div>
+        </div>
+
+        <!-- 课程列表 -->
+        <div id="courses" class="page active">
+            <div class="card">
+                <h2>全部课程</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>课程名</th>
+                        <th>教师</th>
+                        <th>时间</th>
+                        <th>已选/容量</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="courseList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 我的选课 -->
+        <div id="myEnrollments" class="page">
+            <div class="card">
+                <h2>我的选课</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>课程名</th>
+                        <th>教师</th>
+                        <th>时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="enrollmentList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 热门课程 -->
+        <div id="topCourses" class="page">
+            <div class="card">
+                <h2>热门课程排行</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>课程名</th>
+                        <th>教师</th>
+                        <th>已选人数</th>
+                        <th>容量</th>
+                    </tr>
+                    </thead>
+                    <tbody id="topList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+
+    function showLogin() {
+        document.getElementById('loginPage').style.display = 'block';
+        document.getElementById('registerPage').style.display = 'none';
+    }
+
+    function showRegister() {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('registerPage').style.display = 'block';
+    }
+
+    function showMsg(id, msg, type) {
+        document.getElementById(id).innerHTML =
+            `<div class="alert alert-${type}">${msg}</div>`;
+    }
+
+    async function login() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        const res = await fetch('/api/user/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
+        });
+        const data = await res.json();
+        if (res.ok) {
+            currentUser = data;
+            document.getElementById('navUsername', ).textContent =
+                `${data.username}（${data.role}）`;
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            loadCourses();
+        } else {
+            showMsg('loginMsg', data.error, 'error');
+        }
+    }
+
+    async function register() {
+        const body = {
+            username: document.getElementById('regUsername').value,
+            password: document.getElementById('regPassword').value,
+            email: document.getElementById('regEmail').value,
+            role: document.getElementById('regRole').value
+        };
+        const res = await fetch('/api/user/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showMsg('registerMsg', '注册成功，请登录', 'success');
+            setTimeout(showLogin, 1000);
+        } else {
+            showMsg('registerMsg', data.error, 'error');
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('mainPage').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'block';
+    }
+
+    function showTab(name) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(name).classList.add('active');
+        event.target.classList.add('active');
+        if (name === 'courses') loadCourses();
+        if (name === 'myEnrollments') loadMyEnrollments();
+        if (name === 'topCourses') loadTopCourses();
+    }
+
+    async function loadCourses() {
+        const res = await fetch('/api/course/list');
+        const courses = await res.json();
+        const tbody = document.getElementById('courseList');
+        tbody.innerHTML = courses.map(c => `
+            <tr>
+                <td>${c.name}</td>
+                <td>${c.teacher?.name || '-'}</td>
+                <td>${c.schedule || '-'}</td>
+                <td>${c.enrolled}/${c.capacity}</td>
+                <td>
+                    ${currentUser?.role === 'student' ?
+            `<button class="btn btn-primary" onclick="enroll(${c.courseId})">选课</button>` : '-'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function enroll(courseId) {
+        const res = await fetch('/api/enrollment/enroll', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({studentId: currentUser.studentId, courseId})
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadCourses();
+    }
+
+    async function loadMyEnrollments() {
+        const res = await fetch(`/api/enrollment/my/${currentUser.studentId}`);
+        const list = await res.json();
+        const tbody = document.getElementById('enrollmentList');
+        tbody.innerHTML = list.map(e => `
+            <tr>
+                <td>${e.course?.name || '-'}</td>
+                <td>${e.course?.teacher?.name || '-'}</td>
+                <td>${e.course?.schedule || '-'}</td>
+                <td>${e.status === 'active' ? '已选' : '已退'}</td>
+                <td>
+                    ${e.status === 'active' ?
+            `<button class="btn btn-danger" onclick="drop(${e.course?.courseId})">退课</button>` : '-'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function drop(courseId) {
+        const res = await fetch('/api/enrollment/drop', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({studentId: currentUser.studentId, courseId})
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        loadMyEnrollments();
+    }
+
+    async function loadTopCourses() {
+        const res = await fetch('/api/course/top');
+        const courses = await res.json();
+        const tbody = document.getElementById('topList');
+        tbody.innerHTML = courses.map((c, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${c.name}</td>
+                <td>${c.teacher?.name || '-'}</td>
+                <td>${c.enrolled}</td>
+                <td>${c.capacity}</td>
+            </tr>
+        `).join('');
+    }
+</script>
+</body>
+</html>
