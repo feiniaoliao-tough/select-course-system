@@ -37,4 +37,21 @@ public class TeacherController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    @PutMapping("/update/{teacherId}")
+    public ResponseEntity<?> updateTeacher(@PathVariable Integer teacherId,
+                                           @RequestBody Map<String, Object> body) {
+        try {
+            Teacher teacher = teacherRepository.findById(teacherId)
+                    .orElseThrow(() -> new RuntimeException("教师不存在"));
+            if (body.containsKey("name")) {
+                teacher.setName((String) body.get("name"));
+            }
+            if (body.containsKey("department")) {
+                teacher.setDepartment((String) body.get("department"));
+            }
+            return ResponseEntity.ok(teacherRepository.save(teacher));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

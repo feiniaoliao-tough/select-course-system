@@ -160,6 +160,7 @@
         <div class="tab-bar">
             <div class="tab active" onclick="showTab('courses')">课程列表</div>
             <div class="tab" onclick="showTab('myEnrollments')" id="tabMyEnroll">我的选课</div>
+            <div class="tab" onclick="showTab('myGrades')" id="tabMyGrades">我的成绩</div>
             <div class="tab" onclick="showTab('topCourses')">热门课程</div>
         </div>
 
@@ -197,6 +198,24 @@
                     </tr>
                     </thead>
                     <tbody id="enrollmentList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 我的成绩 -->
+        <div id="myGrades" class="page">
+            <div class="card">
+                <h2>我的成绩</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>课程名</th>
+                        <th>教师</th>
+                        <th>分数</th>
+                        <th>等级</th>
+                    </tr>
+                    </thead>
+                    <tbody id="gradeList"></tbody>
                 </table>
             </div>
         </div>
@@ -295,6 +314,7 @@
         event.target.classList.add('active');
         if (name === 'courses') loadCourses();
         if (name === 'myEnrollments') loadMyEnrollments();
+        if (name === 'myGrades') loadMyGrades();
         if (name === 'topCourses') loadTopCourses();
     }
 
@@ -369,6 +389,24 @@
                 <td>${c.capacity}</td>
             </tr>
         `).join('');
+    }
+
+    async function loadMyGrades() {
+        const res = await fetch(`/api/grade/my/${currentUser.studentId}`);
+        const list = await res.json();
+        const tbody = document.getElementById('gradeList');
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999">暂无成绩</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(g => `
+        <tr>
+            <td>${g.enrollment?.course?.name || '-'}</td>
+            <td>${g.enrollment?.course?.teacher?.name || '-'}</td>
+            <td>${g.score ?? '未录入'}</td>
+            <td>${g.gradeLevel ?? '-'}</td>
+        </tr>
+    `).join('');
     }
 </script>
 </body>
